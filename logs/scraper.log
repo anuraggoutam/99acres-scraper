@@ -1,0 +1,17 @@
+2026-04-01 15:54:50,558 [INFO] Starting scrape: https://www.99acres.com/property-in-noida-ffid?city=7&preference=S&area_unit=1&res_com=R&bedroom_num=2,3 | pages=2
+2026-04-01 15:54:52,674 [INFO] Scraping page 1/2
+2026-04-01 15:55:02,244 [INFO] XHR captured 25 listings from https://www.99acres.com/api-aggregator/srp/search?page=2&page_size=25&platform=D
+2026-04-01 15:55:02,864 [INFO] XHR captured 25 listings from https://www.99acres.com/api-aggregator/srp/search?page=3&page_size=25&platform=D
+2026-04-01 15:55:03,102 [INFO] Page 1: 18 new unique (18 total)
+2026-04-01 15:55:03,107 [INFO] Scraping page 2/2
+2026-04-01 15:55:17,335 [INFO] XHR captured 25 listings from https://www.99acres.com/api-aggregator/srp/search?page=3&page_size=25&platform=D
+2026-04-01 15:55:17,749 [INFO] Page 2: 0 new unique (18 total)
+2026-04-01 15:55:17,753 [INFO] Scraper finished: 18 unique listings collected
+2026-04-01 15:55:18,348 [INFO] Saved 18 properties (77 columns) -> data/noida_buy.csv
+2026-04-01 15:55:18,355 [INFO] 
+  listing_id                                      title price_label   city bedrooms
+0  S88968198             3 BHK Flat in Sector 62, Noida        2 Cr  Noida        3
+1  C88609632             3 BHK Flat in Sector 75, Noida     1.78 Cr  Noida        3
+2  N87338500             3 BHK Flat in Sector 75, Noida     2.78 Cr  Noida        3
+3  C88245460             3 BHK Flat in Sector 75, Noida     2.75 Cr  Noida        3
+4  U87003244  2 Bedroom Farm house in Sector 135, Noida     1.38 Cr  Noida        2
