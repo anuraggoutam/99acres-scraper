@@ -4,17 +4,26 @@ import logging
 import json
 import re
 import random
+import time
 from urllib.parse import urlparse, parse_qsl, urlencode, urlunparse
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-MAX_PAGES_HARD_LIMIT = 50
-BASE_PAGE_DELAY = (4, 7)
-BACKOFF_INCREMENT = (1, 3)
+MAX_PAGES_HARD_LIMIT = 500
+BASE_PAGE_DELAY = (5, 9)
+BACKOFF_INCREMENT = (0.5, 1.5)
 CHECKPOINT_FILE = Path("data") / "_checkpoint.json"
+COOKIES_FILE = Path("data") / "_cookies.json"
 
-_LISTING_ID_KEYS = ("PROP_ID", "propId", "id", "propertyId", "prop_id", "SPID")
+# Every BATCH_SIZE pages, take a long human-like break
+BATCH_SIZE = 25
+BATCH_BREAK_RANGE = (60, 120)
+
+# After this many consecutive pages with 0 new listings, stop
+MAX_CONSECUTIVE_EMPTY = 5
+
+_LISTING_ID_KEYS = ("SPID", "PROP_ID", "propId", "id", "propertyId", "prop_id")
 _LISTING_SENTINEL_KEYS = ("PROP_ID", "propId", "PRICE", "price", "LOCALITY_NAME", "LOCALITY")
 _LISTING_CONTAINER_KEYS = (
     "properties", "srpResults", "listings", "data",
@@ -29,9 +38,14 @@ _SKIP_URL_PATTERNS = (
 class BrowserScraper:
     def __init__(self, proxy: str | None = None):
         self.proxy = proxy
+        self._on_page_done = None
+
+    def set_page_callback(self, fn):
+        """Register a callback fn(results, seen_ids, page_num) called after every page."""
+        self._on_page_done = fn
 
     # ------------------------------------------------------------------
-    # Checkpoint: save progress after every page so nothing is ever lost
+    # Checkpoint
     # ------------------------------------------------------------------
 
     def _save_checkpoint(self, results: list[dict], seen_ids: set[str], last_page: int, url: str):
@@ -49,9 +63,6 @@ class BrowserScraper:
             logger.debug(f"Checkpoint save failed: {e}")
 
     def _load_checkpoint(self, url: str) -> tuple[list[dict], set[str], int]:
-        """Load previous checkpoint if it matches the current URL.
-        Returns (results, seen_ids, last_completed_page).
-        """
         try:
             if not CHECKPOINT_FILE.exists():
                 return [], set(), 0
@@ -72,6 +83,26 @@ class BrowserScraper:
         try:
             CHECKPOINT_FILE.unlink(missing_ok=True)
             CHECKPOINT_FILE.with_suffix(".tmp").unlink(missing_ok=True)
+        except Exception:
+            pass
+
+    # ------------------------------------------------------------------
+    # Cookie persistence -- solve CAPTCHA once, reuse across restarts
+    # ------------------------------------------------------------------
+
+    def _save_cookies(self, context):
+        try:
+            cookies = context.cookies()
+            COOKIES_FILE.write_text(json.dumps(cookies, ensure_ascii=False), encoding="utf-8")
+        except Exception:
+            pass
+
+    def _load_cookies(self, context):
+        try:
+            if COOKIES_FILE.exists():
+                cookies = json.loads(COOKIES_FILE.read_text(encoding="utf-8"))
+                context.add_cookies(cookies)
+                logger.info(f"Loaded {len(cookies)} saved cookies (CAPTCHA session reused)")
         except Exception:
             pass
 
@@ -119,17 +150,44 @@ class BrowserScraper:
 
     def _extract_from_scripts(self, page: Page) -> list[dict]:
         try:
+            data = page.evaluate("""() => {
+                try {
+                    const d = window.__initialData__;
+                    if (d && d.srp && d.srp.pageData && d.srp.pageData.properties) {
+                        return d.srp.pageData.properties;
+                    }
+                    if (d && d.pageData && d.pageData.properties) {
+                        return d.pageData.properties;
+                    }
+                } catch(e) {}
+                try {
+                    const n = window.__NEXT_DATA__;
+                    if (n && n.props) return null;
+                } catch(e) {}
+                try {
+                    const s = window.__INITIAL_STATE__;
+                    if (s) return null;
+                } catch(e) {}
+                return null;
+            }""")
+            if data and isinstance(data, list) and len(data) > 0 and self._looks_like_listing(data[0]):
+                logger.info(f"Extracted {len(data)} listings from window.__initialData__")
+                return data
+        except Exception:
+            pass
+
+        try:
             scripts = page.evaluate(
                 "() => Array.from(document.querySelectorAll('script'))"
                 ".map(s => s.textContent).filter(t => t && t.length > 500)"
             )
         except Exception:
             return []
+
         patterns = [
-            r'window\.__INITIAL_STATE__\s*=\s*({.+?});\s*</script',
-            r'window\.__NEXT_DATA__\s*=\s*({.+?});\s*</script',
-            r'"srpResults"\s*:\s*(\[.+?\])\s*[,}]',
-            r'"properties"\s*:\s*(\[.+?\])\s*[,}]',
+            r'window\.__initialData__\s*=\s*({.+})',
+            r'window\.__INITIAL_STATE__\s*=\s*({.+?});',
+            r'window\.__NEXT_DATA__\s*=\s*({.+?});',
         ]
         for text in scripts:
             for pat in patterns:
@@ -137,9 +195,7 @@ class BrowserScraper:
                 if m:
                     try:
                         obj = json.loads(m.group(1))
-                        found = self._extract_listings_deep(obj) if isinstance(obj, dict) else (
-                            obj if isinstance(obj, list) and obj and self._looks_like_listing(obj[0]) else []
-                        )
+                        found = self._extract_listings_deep(obj)
                         if found:
                             logger.info(f"Extracted {len(found)} listings from embedded script")
                             return found
@@ -162,13 +218,16 @@ class BrowserScraper:
                 const sels = [
                     '[id^="srp_tuple_"]', '.srpTuple__tupleTable',
                     '.projectTuple__projectContent', '.tupleNew__outerTupleWrap',
-                    '.nb__cardWrapper', '[class*="tuple"]', '[class*="Tuple"]',
-                    '[class*="srpCard"]', '[class*="property-card"]',
+                    '.nb__cardWrapper', '[class*="srpCard"]', '[class*="property-card"]',
                 ];
                 let cards = [];
                 for (const s of sels) {
                     const found = document.querySelectorAll(s);
                     if (found.length > cards.length) cards = Array.from(found);
+                }
+                if (!cards.length) {
+                    const tupleCards = document.querySelectorAll('[class*="tuple"], [class*="Tuple"]');
+                    if (tupleCards.length) cards = Array.from(tupleCards);
                 }
                 for (const card of cards) {
                     try {
@@ -178,27 +237,67 @@ class BrowserScraper:
                             const h = a.getAttribute('href') || '';
                             if (h.includes('99acres') || h.startsWith('/')) {
                                 if (!propUrl || a.textContent.length > title.length) {
-                                    propUrl = h; title = (a.textContent || '').trim();
+                                    propUrl = h;
+                                    title = (a.textContent || '').trim();
                                 }
                             }
                         }
                         let propId = '';
-                        const tid = card.getAttribute('id') || '';
-                        const idm = tid.match(/\\d+/);
-                        if (idm) propId = idm[0];
+                        if (propUrl) {
+                            const spidMatch = propUrl.match(/spid-[A-Z]?(\\d{6,})/i);
+                            if (spidMatch) propId = spidMatch[1];
+                        }
+                        if (!propId) {
+                            const tid = card.getAttribute('id') || '';
+                            const idm = tid.match(/(\\d{6,})/);
+                            if (idm) propId = idm[1];
+                        }
                         if (!propId && propUrl) {
                             const um = propUrl.match(/(\\d{6,})/);
                             if (um) propId = um[1];
                         }
+                        if (!propId) continue;
                         let price = '';
                         const pm = t.match(/\\u20B9[\\s]?[\\d.,]+\\s*(Lac|Cr|L|K|Lakh|Crore)?/i);
                         if (pm) price = pm[0].trim();
-                        if (propId || title || price) {
-                            results.push({
-                                PROP_ID: propId, title, PRICE: price,
-                                LOCALITY_NAME: '', propUrl, _source: 'dom',
-                            });
+                        let bedrooms = '';
+                        const bhkMatch = t.match(/(\\d+)\\s*BHK/i);
+                        if (bhkMatch) bedrooms = bhkMatch[1];
+                        let area = '';
+                        const areaMatch = t.match(/(\\d[\\d,.]*)\\s*sq\\.?\\s*ft/i);
+                        if (areaMatch) area = areaMatch[1].replace(/,/g, '');
+                        let locality = '';
+                        if (propUrl) {
+                            const parts = propUrl.split('/').pop() || '';
+                            const locMatch = parts.match(/in-(.+?)-\\d/);
+                            if (locMatch) {
+                                locality = locMatch[1].replace(/-/g, ' ')
+                                    .replace(/\\b\\w/g, c => c.toUpperCase());
+                            }
                         }
+                        let propType = '';
+                        if (/apartment|flat/i.test(t)) propType = 'Residential Apartment';
+                        else if (/villa/i.test(t)) propType = 'Villa';
+                        else if (/plot|land/i.test(t)) propType = 'Plot';
+                        else if (/house/i.test(t)) propType = 'House';
+                        else if (/penthouse/i.test(t)) propType = 'Penthouse';
+                        else if (/studio/i.test(t)) propType = 'Studio';
+                        let bathrooms = '';
+                        const bathMatch = t.match(/(\\d+)\\s*bath/i);
+                        if (bathMatch) bathrooms = bathMatch[1];
+                        let floorNum = '';
+                        const floorMatch = t.match(/(\\d+)(?:st|nd|rd|th)?\\s*floor/i);
+                        if (floorMatch) floorNum = floorMatch[1];
+                        let fullUrl = propUrl;
+                        if (propUrl && !propUrl.startsWith('http')) {
+                            fullUrl = 'https://www.99acres.com' + (propUrl.startsWith('/') ? '' : '/') + propUrl;
+                        }
+                        results.push({
+                            PROP_ID: propId, SPID: propId, PROP_HEADING: title, PRICE: price,
+                            LOCALITY: locality, PD_URL: fullUrl, BEDROOM_NUM: bedrooms,
+                            BATHROOM_NUM: bathrooms, PROPERTY_TYPE: propType, FLOOR_NUM: floorNum,
+                            SUPERBUILTUP_SQFT: area, _source: 'dom',
+                        });
                     } catch(e) {}
                 }
                 return results;
@@ -221,7 +320,14 @@ class BrowserScraper:
         for k in _LISTING_ID_KEYS:
             v = raw.get(k)
             if v:
-                return str(v)
+                s = str(v).strip()
+                if k == "SPID" and s.isdigit() and len(s) >= 5:
+                    return s
+                m = re.match(r'^[A-Z]?(\d{5,})$', s)
+                if m:
+                    return m.group(1)
+                if s.isdigit() and len(s) >= 5:
+                    return s
         return ""
 
     def _is_blocked(self, html: str) -> bool:
@@ -231,13 +337,33 @@ class BrowserScraper:
         lower = html.lower()
         return any(kw in lower for kw in ("captcha", "verify you are human", "robot check"))
 
-    def _wait_for_human(self, page: Page, reason: str, timeout_ms: int = 180_000):
+    def _wait_for_human(self, page: Page, context, reason: str, timeout_ms: int = 300_000):
         logger.warning(
             f"{reason}\n"
-            "  The browser window is open -- please resolve manually.\n"
-            f"  Waiting up to {timeout_ms // 1000}s..."
+            "  >>> Solve it in the browser window -- scraper will continue automatically.\n"
+            f"  >>> Waiting up to {timeout_ms // 1000}s..."
         )
         page.wait_for_timeout(timeout_ms)
+        self._save_cookies(context)
+
+    def _wait_for_xhr(self, pool: list[dict], timeout_sec: float = 8.0):
+        initial_len = len(pool)
+        start = time.time()
+        while time.time() - start < timeout_sec:
+            if len(pool) > initial_len:
+                return
+            time.sleep(0.3)
+
+    def _batch_break(self, page: Page, p_num: int):
+        """Take a long human-like break every BATCH_SIZE pages."""
+        if p_num % BATCH_SIZE != 0:
+            return
+        lo, hi = BATCH_BREAK_RANGE
+        wait = random.uniform(lo, hi)
+        logger.info(
+            f"--- Batch break after {p_num} pages: cooling down {wait:.0f}s ---"
+        )
+        page.wait_for_timeout(int(wait * 1000))
 
     # ------------------------------------------------------------------
     # Main entry point
@@ -259,6 +385,7 @@ class BrowserScraper:
         stealth = Stealth()
         browser = None
         pw_ctx = None
+        scrape_start = time.time()
 
         try:
             pw_ctx = stealth.use_sync(sync_playwright())
@@ -287,9 +414,12 @@ class BrowserScraper:
                 locale="en-US",
                 timezone_id="Asia/Kolkata",
             )
+
+            self._load_cookies(context)
             page = context.new_page()
 
-            captured_listings: list[dict] = []
+            xhr_pool: list[dict] = []
+            xhr_count_at_last_check = 0
 
             def on_response(resp):
                 try:
@@ -302,57 +432,96 @@ class BrowserScraper:
                     if isinstance(body, dict):
                         found = self._extract_listings_deep(body)
                         if found:
-                            captured_listings.extend(found)
-                            logger.info(f"XHR captured {len(found)} listings from {resp.url[:80]}")
+                            xhr_pool.extend(found)
+                            logger.info(f"XHR captured {len(found)} listings from {resp.url[:90]}")
                 except Exception:
                     pass
 
             page.on("response", on_response)
 
             consecutive_empty = 0
+            pages_done_this_session = 0
+            block_retries = 0
+            MAX_BLOCK_RETRIES = 3
 
             for p_num in range(start_page + 1, max_pages + 1):
-                logger.info(f"Scraping page {p_num}/{max_pages}")
-                captured_listings.clear()
+                page_start = time.time()
+                pages_done_this_session += 1
+
+                elapsed_total = time.time() - scrape_start
+                rate = len(results) / max(pages_done_this_session - 1, 1)
+                remaining = max_pages - p_num
+                eta_sec = (elapsed_total / max(pages_done_this_session - 1, 1)) * remaining
+
+                logger.info(
+                    f"Page {p_num}/{max_pages} | "
+                    f"{len(results)} listings | "
+                    f"~{rate:.0f}/page | "
+                    f"ETA ~{eta_sec/60:.0f}min"
+                )
 
                 target_url = self._url_with_page(url, p_num)
 
                 try:
-                    page.goto(target_url, wait_until="domcontentloaded", timeout=60_000)
+                    page.goto(target_url, wait_until="networkidle", timeout=60_000)
                 except Exception as e:
-                    logger.error(f"Navigation failed on page {p_num}: {e}")
-                    break
+                    logger.warning(f"networkidle timeout on page {p_num}, continuing")
+                    try:
+                        page.wait_for_timeout(3000)
+                    except Exception:
+                        logger.error(f"Navigation fully failed on page {p_num}")
+                        break
+
+                self._wait_for_xhr(xhr_pool, timeout_sec=6.0)
 
                 base_lo, base_hi = BASE_PAGE_DELAY
                 inc_lo, inc_hi = BACKOFF_INCREMENT
-                extra = min(p_num - 1, 10) * random.uniform(inc_lo, inc_hi)
+                extra = min(p_num - 1, 20) * random.uniform(inc_lo, inc_hi)
                 page.wait_for_timeout(int((random.uniform(base_lo, base_hi) + extra) * 1000))
 
                 html = page.content()
 
+                # --- Block / CAPTCHA handling with retries ---
                 if self._is_blocked(html):
-                    self._wait_for_human(page, "Access denied by Akamai WAF.", 60_000)
+                    block_retries += 1
+                    if block_retries > MAX_BLOCK_RETRIES:
+                        logger.error(f"Blocked {block_retries} times. Stopping to protect IP.")
+                        break
+                    self._wait_for_human(page, context, "Access denied by Akamai WAF.", 120_000)
                     try:
-                        page.goto(target_url, wait_until="domcontentloaded", timeout=60_000)
+                        page.goto(target_url, wait_until="networkidle", timeout=60_000)
                         page.wait_for_timeout(5000)
                         html = page.content()
                         if self._is_blocked(html):
-                            logger.error("Still blocked after retry. Stopping.")
-                            break
+                            logger.error("Still blocked after retry. Taking a long break...")
+                            page.wait_for_timeout(random.randint(120_000, 300_000))
+                            continue
                     except Exception:
                         break
+                else:
+                    block_retries = max(0, block_retries - 1)
 
                 if self._is_captcha(html):
-                    self._wait_for_human(page, "CAPTCHA detected!")
+                    self._wait_for_human(page, context, "CAPTCHA detected!", 300_000)
+                    html = page.content()
+                    if self._is_captcha(html):
+                        logger.warning("CAPTCHA still present. Retrying page...")
+                        continue
 
+                self._save_cookies(context)
                 self._human_behave(page)
 
                 # --- Extraction pipeline ---
-                raw_listings: list[dict] = list(captured_listings)
+                new_xhr = xhr_pool[xhr_count_at_last_check:]
+                xhr_count_at_last_check = len(xhr_pool)
+
+                raw_listings: list[dict] = list(new_xhr)
 
                 script_listings = self._extract_from_scripts(page)
                 if script_listings:
                     raw_listings.extend(script_listings)
+
+                source = "XHR/script" if raw_listings else "DOM"
 
                 if not raw_listings:
                     raw_listings = self._extract_from_dom(page)
@@ -365,12 +534,11 @@ class BrowserScraper:
                     except Exception:
                         pass
                     self._save_checkpoint(results, seen_ids, p_num, url)
-                    if consecutive_empty >= 2:
-                        logger.warning("2 consecutive empty pages -- stopping.")
+                    if consecutive_empty >= MAX_CONSECUTIVE_EMPTY:
+                        logger.warning(f"{MAX_CONSECUTIVE_EMPTY} consecutive empty pages -- stopping.")
                         break
                     continue
 
-                consecutive_empty = 0
                 new_count = 0
                 for raw in raw_listings:
                     if not isinstance(raw, dict):
@@ -384,18 +552,36 @@ class BrowserScraper:
                     results.append(raw)
                     new_count += 1
 
-                logger.info(f"Page {p_num}: {new_count} new unique ({len(results)} total)")
+                if new_count > 0:
+                    consecutive_empty = 0
+                else:
+                    consecutive_empty += 1
 
-                # Save checkpoint after every successful page
+                page_sec = time.time() - page_start
+                logger.info(
+                    f"Page {p_num}: +{new_count} new ({len(results)} total) "
+                    f"[{source}] ({page_sec:.1f}s)"
+                )
+
                 self._save_checkpoint(results, seen_ids, p_num, url)
 
-                if new_count == 0 and p_num > 1:
-                    consecutive_empty += 1
-                    if consecutive_empty >= 2:
-                        logger.info("No new listings for 2 pages -- end of results.")
-                        break
+                if self._on_page_done:
+                    try:
+                        self._on_page_done(results, seen_ids, p_num)
+                    except Exception as e:
+                        logger.debug(f"Page callback error: {e}")
 
-            logger.info(f"Scraper finished: {len(results)} unique listings collected")
+                if consecutive_empty >= MAX_CONSECUTIVE_EMPTY:
+                    logger.info(f"{MAX_CONSECUTIVE_EMPTY} consecutive empty/duplicate pages -- end of results.")
+                    break
+
+                self._batch_break(page, p_num)
+
+            elapsed = time.time() - scrape_start
+            logger.info(
+                f"Scraper finished: {len(results)} unique listings in "
+                f"{elapsed/60:.1f}min ({pages_done_this_session} pages)"
+            )
             return results
 
         except KeyboardInterrupt:

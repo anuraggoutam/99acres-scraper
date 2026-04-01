@@ -33,8 +33,16 @@ def _s(val) -> str | None:
 
 def parse_property(raw: dict) -> Property | None:
     try:
-        prop_id = _s(_g(raw, "PROP_ID", "propId", "SPID", "id"))
-        if not prop_id:
+        # SPID is always clean numeric; PROP_ID may have letter prefix
+        raw_id = _g(raw, "SPID", "PROP_ID", "propId", "id")
+        if raw_id is None:
+            return None
+        prop_id = str(raw_id).strip()
+        # Strip single leading letter (e.g. "N87338500" -> "87338500")
+        import re as _re
+        m = _re.match(r'^[A-Z]?(\d{5,})$', prop_id)
+        prop_id = m.group(1) if m else prop_id
+        if not prop_id or not any(c.isdigit() for c in prop_id):
             return None
 
         fmt = raw.get("FORMATTED") or {}
