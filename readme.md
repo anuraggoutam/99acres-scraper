@@ -88,6 +88,7 @@ python main.py --pages 10 --url "https://www.99acres.com/property-in-bengaluru-f
 | `--output` | `data/noida_buy.csv` | Output CSV (JSON auto-generated alongside) |
 | `--url` | Noida residential | Override with any 99acres search URL |
 | `--proxy` | None | Residential proxy URL |
+| `--resume` | off | Resume from last checkpoint after crash or Ctrl+C |
 
 ## Output Fields (77 columns)
 
@@ -132,13 +133,45 @@ The scraper is designed to mimic real human browsing:
 2. **403 Access Denied** -- wait 15-30 minutes, your IP resets. Not a permanent ban
 3. **Frequent blocking** -- use a residential proxy: `--proxy http://user:pass@host:port`
 
+## Resume & Crash Recovery
+
+The scraper saves a checkpoint file (`data/_checkpoint.json`) after every page. If it crashes, gets blocked, or you press Ctrl+C, **no data is lost**.
+
+### How it works
+
+- After each page is scraped, all raw listings + progress are saved to disk
+- On Ctrl+C or crash, partial results are still written to your CSV/JSON output
+- Use `--resume` to pick up exactly where you left off
+
+### Usage
+
+```bash
+# Start scraping 20 pages
+python main.py --pages 20
+
+# ... you press Ctrl+C at page 8, or the script crashes
+# Partial data (pages 1-8) is saved to CSV/JSON automatically
+
+# Resume from page 9
+python main.py --pages 20 --resume
+
+# The checkpoint auto-clears when a fresh (non-resume) run starts
+```
+
+### Important notes
+
+- `--resume` only works if the `--url` matches the previous run (different URL = fresh start)
+- The checkpoint file is at `data/_checkpoint.json` -- you can delete it manually to force a fresh start
+- A fresh run (without `--resume`) automatically clears any old checkpoint
+
 ## How It Works
 
 1. Opens 99acres search page in real Chromium with stealth patches
 2. Intercepts XHR API responses for structured JSON data
 3. Falls back to embedded `<script>` JSON parsing if XHR is empty
 4. Falls back to DOM element parsing as last resort
-5. Deduplicates across pages, saves CSV + JSON
+5. Saves checkpoint to disk after every page (crash-safe)
+6. Deduplicates across pages, saves CSV + JSON
 
 ## Project Structure
 
@@ -154,6 +187,6 @@ The scraper is designed to mimic real human browsing:
 │   ├── parser.py            # Raw API -> structured Property
 │   ├── models.py            # Pydantic data model (77 fields)
 │   └── utils.py             # Price/date/code normalization
-├── data/                    # Output CSV + JSON files
+├── data/                    # Output CSV + JSON + checkpoint file
 └── logs/                    # scraper.log + debug screenshots
 ```

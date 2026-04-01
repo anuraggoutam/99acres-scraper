@@ -25,24 +25,43 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+def _save_output(all_properties: list[dict], output: str):
+    """Write CSV + JSON from parsed properties. Safe to call repeatedly."""
+    if not all_properties:
+        return
+    df = pd.DataFrame(all_properties)
+    df.to_csv(output, index=False)
+    json_path = output.replace(".csv", ".json")
+    df.to_json(json_path, orient="records", indent=2, force_ascii=False)
+    return df
+
+
 @click.command()
 @click.option("--pages", default=3, help="Number of pages to scrape (max 50)")
 @click.option("--proxy", default=None, help="Proxy URL (e.g. http://user:pass@host:port)")
 @click.option("--output", default="data/noida_buy.csv", help="Output CSV path")
 @click.option("--url", default=None, help="Custom 99acres search URL")
-def scrape(pages: int, proxy: str | None, output: str, url: str | None):
+@click.option("--resume", is_flag=True, default=False, help="Resume from last checkpoint")
+def scrape(pages: int, proxy: str | None, output: str, url: str | None, resume: bool):
     search_url = url or config.search_url
-    logger.info(f"Starting scrape: {search_url} | pages={pages}")
+
+    if resume:
+        logger.info(f"Resuming scrape: {search_url} | pages={pages}")
+    else:
+        logger.info(f"Starting scrape: {search_url} | pages={pages}")
+
+    raw_listings = []
+    interrupted = False
 
     try:
         browser = BrowserScraper(proxy=proxy)
-        raw_listings = browser.scrape(search_url, max_pages=pages)
+        raw_listings = browser.scrape(search_url, max_pages=pages, resume=resume)
     except KeyboardInterrupt:
-        logger.info("Interrupted by user.")
-        sys.exit(0)
+        logger.info("Interrupted by user -- saving collected data.")
+        interrupted = True
     except Exception as e:
         logger.error(f"Scraper failed: {e}", exc_info=True)
-        sys.exit(1)
+        interrupted = True
 
     all_properties = []
     parse_errors = 0
@@ -57,12 +76,7 @@ def scrape(pages: int, proxy: str | None, output: str, url: str | None):
         logger.warning(f"Could not parse {parse_errors} listings (check logs for details)")
 
     if all_properties:
-        df = pd.DataFrame(all_properties)
-        df.to_csv(output, index=False)
-
-        json_path = output.replace(".csv", ".json")
-        df.to_json(json_path, orient="records", indent=2, force_ascii=False)
-
+        df = _save_output(all_properties, output)
         logger.info(f"Saved {len(all_properties)} properties ({len(df.columns)} columns) -> {output}")
 
         preview = ["listing_id", "title", "price_label", "city", "bedrooms"]
@@ -76,6 +90,16 @@ def scrape(pages: int, proxy: str | None, output: str, url: str | None):
             "  - The search URL returns no results"
         )
         pd.DataFrame().to_csv(output, index=False)
+
+    if interrupted:
+        if all_properties:
+            logger.info(
+                f"Partial data saved ({len(all_properties)} listings).\n"
+                f"  Run with --resume to continue from where you left off."
+            )
+        else:
+            logger.info("Run with --resume to continue from where you left off.")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

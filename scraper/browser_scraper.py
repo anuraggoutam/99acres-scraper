@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 MAX_PAGES_HARD_LIMIT = 50
 BASE_PAGE_DELAY = (4, 7)
 BACKOFF_INCREMENT = (1, 3)
+CHECKPOINT_FILE = Path("data") / "_checkpoint.json"
 
 _LISTING_ID_KEYS = ("PROP_ID", "propId", "id", "propertyId", "prop_id", "SPID")
 _LISTING_SENTINEL_KEYS = ("PROP_ID", "propId", "PRICE", "price", "LOCALITY_NAME", "LOCALITY")
@@ -29,8 +30,56 @@ class BrowserScraper:
     def __init__(self, proxy: str | None = None):
         self.proxy = proxy
 
+    # ------------------------------------------------------------------
+    # Checkpoint: save progress after every page so nothing is ever lost
+    # ------------------------------------------------------------------
+
+    def _save_checkpoint(self, results: list[dict], seen_ids: set[str], last_page: int, url: str):
+        try:
+            payload = {
+                "url": url,
+                "last_page": last_page,
+                "seen_ids": list(seen_ids),
+                "results": results,
+            }
+            tmp = CHECKPOINT_FILE.with_suffix(".tmp")
+            tmp.write_text(json.dumps(payload, default=str, ensure_ascii=False), encoding="utf-8")
+            tmp.replace(CHECKPOINT_FILE)
+        except Exception as e:
+            logger.debug(f"Checkpoint save failed: {e}")
+
+    def _load_checkpoint(self, url: str) -> tuple[list[dict], set[str], int]:
+        """Load previous checkpoint if it matches the current URL.
+        Returns (results, seen_ids, last_completed_page).
+        """
+        try:
+            if not CHECKPOINT_FILE.exists():
+                return [], set(), 0
+            data = json.loads(CHECKPOINT_FILE.read_text(encoding="utf-8"))
+            if data.get("url") != url:
+                logger.info("Checkpoint URL mismatch -- starting fresh")
+                return [], set(), 0
+            results = data.get("results", [])
+            seen_ids = set(data.get("seen_ids", []))
+            last_page = data.get("last_page", 0)
+            logger.info(f"Resumed from checkpoint: {len(results)} listings, page {last_page} completed")
+            return results, seen_ids, last_page
+        except Exception as e:
+            logger.warning(f"Could not load checkpoint: {e}")
+            return [], set(), 0
+
+    def clear_checkpoint(self):
+        try:
+            CHECKPOINT_FILE.unlink(missing_ok=True)
+            CHECKPOINT_FILE.with_suffix(".tmp").unlink(missing_ok=True)
+        except Exception:
+            pass
+
+    # ------------------------------------------------------------------
+    # Human-like behavior
+    # ------------------------------------------------------------------
+
     def _human_behave(self, page: Page):
-        """Simulate natural browsing: random scroll + mouse movement."""
         for _ in range(random.randint(2, 4)):
             page.mouse.move(
                 random.randint(200, 1200),
@@ -43,6 +92,10 @@ class BrowserScraper:
             page.wait_for_timeout(random.randint(500, 1000))
         page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
         page.wait_for_timeout(random.randint(800, 1500))
+
+    # ------------------------------------------------------------------
+    # Extraction helpers
+    # ------------------------------------------------------------------
 
     def _looks_like_listing(self, item: dict) -> bool:
         return isinstance(item, dict) and any(k in item for k in _LISTING_SENTINEL_KEYS)
@@ -72,7 +125,6 @@ class BrowserScraper:
             )
         except Exception:
             return []
-
         patterns = [
             r'window\.__INITIAL_STATE__\s*=\s*({.+?});\s*</script',
             r'window\.__NEXT_DATA__\s*=\s*({.+?});\s*</script',
@@ -155,6 +207,10 @@ class BrowserScraper:
             logger.debug(f"DOM extraction error: {e}")
             return []
 
+    # ------------------------------------------------------------------
+    # Helpers
+    # ------------------------------------------------------------------
+
     def _url_with_page(self, base: str, page_num: int) -> str:
         parsed = urlparse(base)
         q = dict(parse_qsl(parsed.query, keep_blank_values=True))
@@ -169,8 +225,7 @@ class BrowserScraper:
         return ""
 
     def _is_blocked(self, html: str) -> bool:
-        lower = html.lower()
-        return "access denied" in lower or len(html) < 1000
+        return "access denied" in html.lower() or len(html) < 1000
 
     def _is_captcha(self, html: str) -> bool:
         lower = html.lower()
@@ -184,11 +239,27 @@ class BrowserScraper:
         )
         page.wait_for_timeout(timeout_ms)
 
-    def scrape(self, url: str, max_pages: int = 5) -> list[dict]:
-        max_pages = min(max_pages, MAX_PAGES_HARD_LIMIT)
-        stealth = Stealth()
+    # ------------------------------------------------------------------
+    # Main entry point
+    # ------------------------------------------------------------------
 
+    def scrape(self, url: str, max_pages: int = 5, resume: bool = False) -> list[dict]:
+        max_pages = min(max_pages, MAX_PAGES_HARD_LIMIT)
+
+        if resume:
+            results, seen_ids, start_page = self._load_checkpoint(url)
+        else:
+            results, seen_ids, start_page = [], set(), 0
+            self.clear_checkpoint()
+
+        if start_page >= max_pages:
+            logger.info("Checkpoint shows all pages already scraped.")
+            return results
+
+        stealth = Stealth()
         browser = None
+        pw_ctx = None
+
         try:
             pw_ctx = stealth.use_sync(sync_playwright())
             pw = pw_ctx.__enter__()
@@ -205,7 +276,6 @@ class BrowserScraper:
                     "--disable-infobars",
                 ],
             )
-
             context = browser.new_context(
                 user_agent=(
                     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -217,7 +287,6 @@ class BrowserScraper:
                 locale="en-US",
                 timezone_id="Asia/Kolkata",
             )
-
             page = context.new_page()
 
             captured_listings: list[dict] = []
@@ -240,11 +309,9 @@ class BrowserScraper:
 
             page.on("response", on_response)
 
-            results: list[dict] = []
-            seen_ids: set[str] = set()
             consecutive_empty = 0
 
-            for p_num in range(1, max_pages + 1):
+            for p_num in range(start_page + 1, max_pages + 1):
                 logger.info(f"Scraping page {p_num}/{max_pages}")
                 captured_listings.clear()
 
@@ -256,12 +323,10 @@ class BrowserScraper:
                     logger.error(f"Navigation failed on page {p_num}: {e}")
                     break
 
-                # Randomized wait that increases slightly with page number
                 base_lo, base_hi = BASE_PAGE_DELAY
                 inc_lo, inc_hi = BACKOFF_INCREMENT
                 extra = min(p_num - 1, 10) * random.uniform(inc_lo, inc_hi)
-                wait_sec = random.uniform(base_lo, base_hi) + extra
-                page.wait_for_timeout(int(wait_sec * 1000))
+                page.wait_for_timeout(int((random.uniform(base_lo, base_hi) + extra) * 1000))
 
                 html = page.content()
 
@@ -299,6 +364,7 @@ class BrowserScraper:
                         page.screenshot(path=f"logs/browser_page_{p_num}.png", full_page=True)
                     except Exception:
                         pass
+                    self._save_checkpoint(results, seen_ids, p_num, url)
                     if consecutive_empty >= 2:
                         logger.warning("2 consecutive empty pages -- stopping.")
                         break
@@ -320,6 +386,9 @@ class BrowserScraper:
 
                 logger.info(f"Page {p_num}: {new_count} new unique ({len(results)} total)")
 
+                # Save checkpoint after every successful page
+                self._save_checkpoint(results, seen_ids, p_num, url)
+
                 if new_count == 0 and p_num > 1:
                     consecutive_empty += 1
                     if consecutive_empty >= 2:
@@ -329,9 +398,13 @@ class BrowserScraper:
             logger.info(f"Scraper finished: {len(results)} unique listings collected")
             return results
 
+        except KeyboardInterrupt:
+            logger.info(f"Interrupted! {len(results)} listings already in checkpoint.")
+            return results
+
         except Exception as e:
             logger.error(f"Scraper crashed: {e}", exc_info=True)
-            return []
+            return results
 
         finally:
             try:
@@ -340,6 +413,7 @@ class BrowserScraper:
             except Exception:
                 pass
             try:
-                pw_ctx.__exit__(None, None, None)
+                if pw_ctx:
+                    pw_ctx.__exit__(None, None, None)
             except Exception:
                 pass
