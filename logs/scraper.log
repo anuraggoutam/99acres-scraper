@@ -1,124 +1,16 @@
-2026-04-01 00:45:52,208 [INFO] Fetching page 1 via API
-2026-04-01 00:45:52,373 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:45:56,381 [INFO] Fetching page 1 via API
-2026-04-01 00:45:56,453 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:46:00,462 [INFO] Fetching page 1 via API
-2026-04-01 00:46:00,541 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:46:04,548 [INFO] Fetching page 1 via API
-2026-04-01 00:46:04,617 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:46:12,625 [INFO] Fetching page 1 via API
-2026-04-01 00:46:12,728 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:46:31,345 [INFO] Fetching page 1 via API
-2026-04-01 00:46:31,492 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:46:35,500 [INFO] Fetching page 1 via API
-2026-04-01 00:46:35,567 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:46:39,575 [INFO] Fetching page 1 via API
-2026-04-01 00:46:39,642 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:46:43,649 [INFO] Fetching page 1 via API
-2026-04-01 00:46:43,717 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:46:51,724 [INFO] Fetching page 1 via API
-2026-04-01 00:46:51,856 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:46:51,856 [ERROR] Page 1 failed: Client error '401 Unauthorized' for url 'https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT'
-For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401. Switching to browser fallback...
-2026-04-01 00:46:55,672 [INFO] Browser scraping page 1
-2026-04-01 00:47:51,283 [WARNING] Forcing browser fallback (slow)
-2026-04-01 00:47:53,044 [INFO] Browser scraping page 1
-2026-04-01 00:47:58,820 [INFO] Scraped 0 properties -> data/99acres_noida.csv
-2026-04-01 00:48:09,756 [INFO] Fetching page 1 via API
-2026-04-01 00:48:09,892 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:48:13,899 [INFO] Fetching page 1 via API
-2026-04-01 00:48:13,973 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:48:17,980 [INFO] Fetching page 1 via API
-2026-04-01 00:48:18,047 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:48:22,055 [INFO] Fetching page 1 via API
-2026-04-01 00:48:22,136 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:48:30,142 [INFO] Fetching page 1 via API
-2026-04-01 00:48:30,268 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:48:30,268 [ERROR] Page 1 failed: Client error '401 Unauthorized' for url 'https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT'
-For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401. Switching to browser fallback...
-2026-04-01 00:48:31,844 [INFO] Browser scraping page 1
-2026-04-01 00:48:37,599 [INFO] Scraped 0 properties -> data/noida_buy.csv
-2026-04-01 00:50:08,491 [INFO] Fetching page 1 via API
-2026-04-01 00:50:08,659 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:50:12,667 [INFO] Fetching page 1 via API
-2026-04-01 00:50:12,756 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:50:16,764 [INFO] Fetching page 1 via API
-2026-04-01 00:50:16,834 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:50:20,841 [INFO] Fetching page 1 via API
-2026-04-01 00:50:20,928 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:50:28,935 [INFO] Fetching page 1 via API
-2026-04-01 00:50:29,063 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:50:29,064 [ERROR] Page 1 failed: Client error '401 Unauthorized' for url 'https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT'
-For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401. Switching to browser fallback...
-2026-04-01 00:50:31,416 [INFO] Browser scraping page 1
-2026-04-01 00:50:37,359 [INFO] Scraped 0 properties -> data/noida_buy.csv
-2026-04-01 00:53:06,646 [INFO] Fetching page 1 via API
-2026-04-01 00:53:06,807 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:53:10,815 [INFO] Fetching page 1 via API
-2026-04-01 00:53:10,883 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:53:14,890 [INFO] Fetching page 1 via API
-2026-04-01 00:53:14,962 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:53:18,970 [INFO] Fetching page 1 via API
-2026-04-01 00:53:19,050 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:53:27,058 [INFO] Fetching page 1 via API
-2026-04-01 00:53:27,173 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:53:27,173 [ERROR] Page 1 failed: Client error '401 Unauthorized' for url 'https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT'
-For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401. Switching to browser fallback...
-2026-04-01 00:53:28,603 [INFO] Browser scraping page 1
-2026-04-01 00:53:34,828 [INFO] Scraped 0 properties -> data/noida_buy.csv
-2026-04-01 00:54:32,100 [INFO] Fetching page 1 via API
-2026-04-01 00:54:32,243 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:54:36,251 [INFO] Fetching page 1 via API
-2026-04-01 00:54:36,324 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:54:40,332 [INFO] Fetching page 1 via API
-2026-04-01 00:54:40,401 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:54:44,408 [INFO] Fetching page 1 via API
-2026-04-01 00:54:44,475 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:54:52,482 [INFO] Fetching page 1 via API
-2026-04-01 00:54:52,600 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:54:52,601 [ERROR] Page 1 failed: Client error '401 Unauthorized' for url 'https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT'
-For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401. Switching to browser fallback...
-2026-04-01 00:54:54,066 [INFO] Browser scraping page 1
-2026-04-01 00:55:21,294 [INFO] Scraped 0 properties -> data/noida_buy.csv
-2026-04-01 00:55:57,102 [INFO] Fetching page 1 via API
-2026-04-01 00:55:57,230 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:56:01,238 [INFO] Fetching page 1 via API
-2026-04-01 00:56:01,305 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:56:05,312 [INFO] Fetching page 1 via API
-2026-04-01 00:56:05,392 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:56:09,398 [INFO] Fetching page 1 via API
-2026-04-01 00:56:09,469 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:56:17,476 [INFO] Fetching page 1 via API
-2026-04-01 00:56:17,600 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 00:56:17,601 [ERROR] Page 1 failed: Client error '401 Unauthorized' for url 'https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT'
-For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401. Switching to browser fallback...
-2026-04-01 00:56:20,443 [INFO] Browser scraping page 1
-2026-04-01 00:56:48,461 [WARNING] No JSON listings captured. Screenshot saved to logs/browser_page_1.png
-2026-04-01 00:56:48,480 [WARNING] Page content looks like a bot-check/captcha page.
-2026-04-01 00:56:49,074 [INFO] Scraped 0 properties -> data/noida_buy.csv
-2026-04-01 00:58:19,318 [WARNING] Forcing browser fallback (slow)
-2026-04-01 00:58:22,363 [INFO] Browser scraping page 1
-2026-04-01 00:58:50,365 [WARNING] No JSON listings captured. Screenshot saved to logs/browser_page_1.png
-2026-04-01 00:58:50,384 [WARNING] Blocked by bot-check/captcha. A browser window should be open — solve the captcha once, then re-run the command to reuse the saved session.
-2026-04-01 00:59:54,425 [WARNING] Forcing browser fallback (slow)
-2026-04-01 00:59:56,652 [INFO] Browser scraping page 1
-2026-04-01 01:00:24,609 [WARNING] No JSON listings captured. Screenshot saved to logs/browser_page_1.png
-2026-04-01 01:00:24,622 [WARNING] Blocked by bot-check/captcha. A browser window should be open — solve the captcha once, then re-run the command to reuse the saved session.
-2026-04-01 01:01:50,973 [INFO] Scraped 0 properties -> data/noida_buy.csv
-2026-04-01 01:03:25,301 [INFO] Scraped 0 properties -> data/noida_buy.csv
-2026-04-01 01:06:07,803 [INFO] Fetching page 1 via API
-2026-04-01 01:06:10,034 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 01:06:14,044 [INFO] Fetching page 1 via API
-2026-04-01 01:06:14,556 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 01:06:18,563 [INFO] Fetching page 1 via API
-2026-04-01 01:06:18,965 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 01:06:22,972 [INFO] Fetching page 1 via API
-2026-04-01 01:06:23,417 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 01:06:31,430 [INFO] Fetching page 1 via API
-2026-04-01 01:06:32,284 [INFO] HTTP Request: GET https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT "HTTP/1.1 401 Unauthorized"
-2026-04-01 01:06:32,285 [ERROR] Page 1 failed: Client error '401 Unauthorized' for url 'https://www.99acres.com/api-aggregator/srp/search?city=7&property_type=91&preference=S&res_com=C&area_unit=1&page=1&page_size=30&platform=DESKTOP&moduleName=GRAILS_SRP&workflow=GRAILS_SRP&seoUrlType=DEFAULT'
-For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401. Switching to browser fallback...
-2026-04-01 01:06:35,183 [INFO] Browser scraping page 1
-2026-04-01 01:07:03,097 [WARNING] No JSON listings captured. Screenshot saved to logs/browser_page_1.png
-2026-04-01 01:07:03,114 [WARNING] Blocked by bot-check/captcha. A browser window should be open — solve the captcha once, then re-run the command to reuse the saved session.
-2026-04-01 01:10:04,246 [INFO] Scraped 0 properties -> data/noida_buy.csv
+2026-04-01 15:45:51,602 [INFO] Starting scrape: https://www.99acres.com/property-in-noida-ffid?city=7&preference=S&area_unit=1&res_com=R | pages=2
+2026-04-01 15:45:53,646 [INFO] Scraping page 1/2
+2026-04-01 15:46:06,097 [INFO] XHR captured 25 listings from https://www.99acres.com/api-aggregator/srp/search?page=2&page_size=25&platform=D
+2026-04-01 15:46:06,586 [INFO] Page 1: 0 new unique (0 total)
+2026-04-01 15:46:06,586 [INFO] Scraping page 2/2
+2026-04-01 15:46:22,401 [INFO] XHR captured 25 listings from https://www.99acres.com/api-aggregator/srp/search?page=3&page_size=25&platform=D
+2026-04-01 15:46:22,817 [INFO] Page 2: 11 new unique (11 total)
+2026-04-01 15:46:22,817 [INFO] Scraper finished: 11 unique listings collected
+2026-04-01 15:46:23,478 [INFO] Saved 11 properties (77 columns) -> data/noida_buy.csv
+2026-04-01 15:46:23,480 [INFO] 
+  listing_id                                                 title price_label   city bedrooms
+0  K89920180  Residential land / Plot in B Block Sector 105, Noida    11.57 Cr  Noida      NaN
+1  S88968198                        3 BHK Flat in Sector 62, Noida        2 Cr  Noida        3
+2  C88609632                        3 BHK Flat in Sector 75, Noida     1.78 Cr  Noida        3
+3  J88554612                        4 BHK Flat in Sector 93, Noida      4.8 Cr  Noida        4
+4  N87338500                        3 BHK Flat in Sector 75, Noida     2.78 Cr  Noida        3

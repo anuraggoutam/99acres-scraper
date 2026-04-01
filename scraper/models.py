@@ -1,15 +1,82 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import Optional
 
+
 class Property(BaseModel):
-    prop_id: str
-    title: str
-    price: str = Field(..., description="Raw price string e.g. ₹1.25 Cr")
-    price_numeric: Optional[float] = None
-    location: str
-    bhk: Optional[str] = None
-    area_sqft: Optional[int] = None
-    builder: Optional[str] = None
-    listing_url: str
-    contact: Optional[str] = None
-    metadata: dict = Field(default_factory=dict)
+    listing_link: Optional[str] = None
+    listing_id: Optional[str] = None
+    building_id: Optional[str] = None
+    title: Optional[str] = None
+    property_type: Optional[str] = None
+    deal_type: Optional[str] = None
+    posted_date: Optional[str] = None
+    modified_date: Optional[str] = None
+    status: Optional[str] = None
+    is_verified: Optional[str] = None
+    availability_label: Optional[str] = None
+    availability_date: Optional[str] = None
+    bedrooms: Optional[str] = None
+    bathrooms: Optional[str] = None
+    balcony: Optional[str] = None
+    living_room: Optional[str] = None
+    kitchen: Optional[str] = None
+    additional_rooms_qty: Optional[str] = None
+    additional_rooms: Optional[str] = None
+    super_built_up_area_sq_ft: Optional[str] = None
+    built_up_area_sq_ft: Optional[str] = None
+    carpet_area: Optional[str] = None
+    configuration_short: Optional[str] = None
+    configuration_long: Optional[str] = None
+    is_corner_property: Optional[str] = None
+    price_label: Optional[str] = None
+    price_num: Optional[float] = None
+    price_text: Optional[str] = None
+    price_per_sq_ft: Optional[str] = None
+    rent_price_sq_ft: Optional[str] = None
+    all_inclusive_price: Optional[str] = None
+    is_price_negotiable: Optional[str] = None
+    tax_govt_charges: Optional[str] = None
+    early_leaving_charges: Optional[str] = None
+    city: Optional[str] = None
+    society: Optional[str] = None
+    address: Optional[str] = None
+    address_desc: Optional[str] = None
+    floor_number: Optional[str] = None
+    total_floor: Optional[str] = None
+    floor_label: Optional[str] = None
+    lat: Optional[str] = None
+    lon: Optional[str] = None
+    facing: Optional[str] = None
+    overlooking: Optional[str] = None
+    property_age: Optional[str] = None
+    key_highlights: Optional[str] = None
+    transaction_type: Optional[str] = None
+    width_of_facing_road: Optional[str] = None
+    wheelchair_friendly: Optional[str] = None
+    property_ownership: Optional[str] = None
+    gated_community: Optional[str] = None
+    pet_friendly: Optional[str] = None
+    flooring: Optional[str] = None
+    corner_property: Optional[str] = None
+    water_source: Optional[str] = None
+    furnishing: Optional[str] = None
+    parking: Optional[str] = None
+    power_backup: Optional[str] = None
+    about: Optional[str] = None
+    furnishing_details: Optional[str] = None
+    features: Optional[str] = None
+    agent_name: Optional[str] = None
+    agency_name: Optional[str] = None
+    agency_address: Optional[str] = None
+    agency_url: Optional[str] = None
+    agency_type: Optional[str] = None
+    agency_profile: Optional[str] = None
+    agency_photo_url: Optional[str] = None
+    agency_hidden_phone: Optional[str] = None
+    agency_hidden_mobile: Optional[str] = None
+    member_since: Optional[str] = None
+    brokerage_type: Optional[str] = None
+    people_activities: Optional[str] = None
+    ad_keywords: Optional[str] = None
+    rera_reg_status: Optional[str] = None
+    rera_reg_num: Optional[str] = None
